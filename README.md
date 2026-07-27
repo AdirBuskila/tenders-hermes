@@ -20,7 +20,7 @@ The nightly workflow reported success every morning. It had been green for
 weeks. Underneath, **only 11 of 34 portals were returning anything** — and the
 cause had nothing to do with the code.
 
-Same code, same day, three origins:
+Same code, same day, four origins:
 
 | Origin | Portals reachable | Refused | Open tenders collected |
 |---|---|---|---|
@@ -34,7 +34,7 @@ Israeli agency portals refuse foreign IPs — it is geo-blocking, not hosting
 reputation, which the German datacenter result establishes: a *datacenter* IP
 inside Israel works while a datacenter IP outside it does not.
 
-Deploying to Tel Aviv recovered **21 portals with zero code changes**, and
+Deploying to Tel Aviv recovered **20 portals with zero code changes**, and
 `rail` (רכבת ישראל) along with them — a portal earlier triage had written off
 as blocked from every origin, which now yields tenders including a tier-A
 railway consulting RFP the client could not previously see.
@@ -150,12 +150,13 @@ Five things in that screenshot are the whole design:
 
 ## What it does
 
-**Relevance.** On 271 open tenders, the agent's criteria flag **45** as relevant
-where the live keyword rules flag **16** — and *reject* 5 the keyword rules
-accept. Every rejection is a keyword hit on ניהול/בקרה in a disqualified domain:
-security-system supply, maintenance control, acoustics, energy management,
-architectural design. A keyword filter structurally cannot make that call, and
-the criteria are prose the client's own engineer can edit.
+**Relevance.** On the 438 open tenders collected nightly, the agent's criteria
+flag **46** as relevant where the live keyword rules flag **22** — and *reject*
+several the keyword rules accept. Every rejection is a keyword hit on
+ניהול/בקרה in a disqualified domain: security-system supply, maintenance
+control, acoustics, energy management, architectural design. A keyword filter
+structurally cannot make that call, and the criteria are prose the client's own
+engineer can edit.
 
 **Digest.** Hebrew RTL, grouped by publisher, soonest deadline first, 🔴/🟠
 urgency markers, delivered to Telegram at 06:00. Silent when there is nothing
