@@ -1,0 +1,42 @@
+# Secrets never live here — they live in %LOCALAPPDATA%\hermes\.env and are
+# forwarded into the container by terminal.docker_forward_env.
+.env
+.env.*
+!.env.example
+
+# Run state: watermarks, probe results, scraped snapshots, logs. All machine-
+# and moment-specific — a probe run from this laptop says nothing about what a
+# VPS would see, and committing one invites someone to read it as a fact.
+#
+# The whole directory is ignored rather than a list of extensions: enumerating
+# them already let state/health.err and state/origin-comparison.md slip into a
+# commit, and the next new extension would slip too.
+#
+# `state/*` not `state/`: git will not re-include a path whose parent directory
+# is excluded, so the .gitkeep negation below silently does nothing with the
+# directory form — and a fresh clone then has no state/ for digest.mjs to write
+# its watermark into.
+state/*
+!state/.gitkeep
+
+# Evaluation runs are generated. The labelled SET is committed (it is derived
+# from the client's files and is the test); individual run outputs are not.
+eval/before.json
+eval/after.json
+eval/run-*.json
+eval/run-*.log
+eval/*.report.md
+
+# Generated from criteria/relevance.md by eval/make-holdout.mjs. Committing it
+# would let the two drift apart silently, and the derived copy is worthless if
+# it no longer matches its source.
+criteria/relevance.holdout.md
+
+# Node, if a dependency ever becomes necessary. Currently the harness is
+# deliberately dependency-free — plain fetch on Node 22.
+node_modules/
+
+# OS noise
+Thumbs.db
+desktop.ini
+.DS_Store

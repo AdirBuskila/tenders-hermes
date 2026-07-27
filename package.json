@@ -1,0 +1,28 @@
+{
+  "name": "tenders-hermes",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Agent harness over the tenders-search-automation production pipeline",
+  "comment": [
+    "Only tsx is a dependency, and only so the container can execute the",
+    "production repo's TypeScript adapters directly. cheerio and playwright are",
+    "resolved from /repo/node_modules so the versions always match production —",
+    "pinning our own copies here would let this harness silently diagnose a",
+    "different Playwright than the one that actually runs the scrape.",
+    "",
+    "It lives here rather than being used from /repo because the repo's",
+    "node_modules is installed on whatever host developed it (win32 esbuild on",
+    "this machine), and the container is Linux. A local toolchain makes the",
+    "harness run identically on Windows, on a VPS, and in CI."
+  ],
+  "scripts": {
+    "scrape": "tsx harness/scrape-local.ts",
+    "dump-configs": "tsx harness/dump-configs.ts",
+    "probe": "node harness/probe-all.mjs",
+    "check": "node --check harness/db.mjs && node --check harness/digest.mjs && node --check harness/classify.mjs && node --check harness/notify.mjs && node --check harness/probe-all.mjs && node --check harness/compare-origins.mjs && node --check harness/lib/source.mjs && node --check harness/lib/supabase.mjs && node --check harness/lib/probe-core.mjs && node --check eval/score.mjs && node --check eval/build-set.mjs && node --check eval/make-holdout.mjs"
+  },
+  "dependencies": {
+    "tsx": "^4.19.2"
+  }
+}

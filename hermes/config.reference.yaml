@@ -1,0 +1,132 @@
+# Annotated reference for the Hermes settings this project depends on.
+#
+# WHY THIS FILE EXISTS
+# --------------------
+# %LOCALAPPDATA%\hermes\config.yaml is GENERATED STATE, not a source file.
+# Running `hermes tools`, `hermes config set`, or the setup wizard rewrites it
+# through a YAML serializer that discards every comment — we lost a fully
+# annotated config to a single `hermes tools disable computer_use`.
+#
+# So the reasoning lives here, in the repo, under version control. This file is
+# documentation, not a config Hermes reads. To re-apply after a reset, copy the
+# blocks below into the live config and re-run the verification in the runbook.
+#
+# Verified against Hermes v0.19.0 (2026.7.20).
+
+terminal:
+  # The agent's shell runs in a container, never on the Windows host. It runs
+  # unattended on cron; its shell should not be my shell.
+  backend: "docker"
+  cwd: "/workspace"
+
+  # 180s default is not enough for a full 21-site scrape.
+  timeout: 300
+  home_mode: "auto"
+  lifetime_seconds: 300
+
+  # Pinned to the production repo's playwright dependency (1.60.0). Bump both
+  # together — a driver/browser mismatch fails at runtime with a bad message.
+  # The Hermes default image (nikolaik/python-nodejs) has no browsers at all.
+  docker_image: "tenders-agent:1.0"
+
+  # Off deliberately. The mounts below are explicit, so launching hermes from
+  # some other directory can never silently expose that directory to the agent.
+  docker_mount_cwd_to_workspace: false
+
+  # THE LOAD-BEARING GUARDRAIL.
+  #
+  # /repo is the live production scraper serving real engineers at the client.
+  # Read-only is not a policy, it is a mount flag: the agent reads it to
+  # diagnose failures and draft patches, and cannot write it even if it decides
+  # it should. Proposals go to /workspace/staged/ for a human to apply.
+  #
+  # Verify after any change:
+  #   docker run --rm -v "...:/repo:ro" tenders-agent:1.0 \
+  #     bash -lc "touch /repo/X 2>/dev/null && echo BROKEN || echo 'ro enforced'"
+  docker_volumes:
+    - "C:/Users/Adir/Desktop/Coding/Dev/tenders-search-automation:/repo:ro"
+    - "C:/Users/Adir/Desktop/Coding/Dev/tenders-hermes:/workspace"
+
+  # Least privilege. The container receives the ANON key only; the service key
+  # never enters it. Tender titles are untrusted third-party text flowing into a
+  # tool-using model, so the container is given no credential capable of
+  # writing production data.
+  docker_forward_env:
+    - "SUPABASE_URL"
+    - "SUPABASE_ANON_KEY"
+    - "ANTHROPIC_API_KEY"
+
+  # Needed — the agent fetches government portals to diagnose scrapers.
+  docker_network: true
+
+  # Hermes additionally applies, automatically (tools/environments/docker.py):
+  #   --cap-drop ALL --cap-add DAC_OVERRIDE,CHOWN,FOWNER
+  #   --security-opt no-new-privileges
+  #   --tmpfs /tmp:rw,nosuid,size=512m
+  container_cpu: 1
+  container_memory: 5120
+  container_disk: 51200
+  container_persistent: true
+
+skills:
+  # Project skills live in the project repo: version-controlled, diffable,
+  # portable to the next client. external_dirs are READ-ONLY to the agent by
+  # design — these are the procedures it follows, and it should not be able to
+  # quietly rewrite them.
+  external_dirs:
+    - "C:/Users/Adir/Desktop/Coding/Dev/tenders-hermes/skills"
+
+  # The knowledge the agent IS allowed to evolve lives at
+  # /workspace/criteria/relevance.md — data, not procedure, with git as the
+  # approval gate.
+  #
+  # These two flags cover the other case: the agent authoring a brand-new skill
+  # for itself. Staged to ~/.hermes/pending/skills/, reviewed via /skills pending.
+  write_approval: true
+  guard_agent_created: true
+
+  creation_nudge_interval: 15
+
+memory:
+  # NOT gated, deliberately. Memory is 2200 characters of inert prose; a skill
+  # is a procedure that will later be executed. Review friction belongs where
+  # the blast radius is. Gating everything trains people to approve blindly.
+  write_approval: false
+  memory_char_limit: 2200
+  user_char_limit: 1375
+
+platform_toolsets:
+  # Telegram is the client-facing surface — anything reachable from a chat
+  # message is attack surface. Trimmed from the hermes-telegram preset.
+  #
+  # Dropped, each for a reason:
+  #   browser, code_execution - large blast radius from a chat message
+  #   computer_use            - drives the host desktop. Never, from a chat.
+  #   image_gen, tts, vision  - no role here, all cost money
+  #   session_search          - would let a chat user mine past sessions
+  #
+  # Delivery does not need send_message: `cron --deliver telegram` routes the
+  # agent's final response through the gateway on its own.
+  telegram: [terminal, file, web, skills, todo, memory, cronjob, clarify]
+
+  # CLI stays capable — I'm sitting in front of it. computer_use is disabled
+  # globally regardless, via `hermes tools disable computer_use`.
+  cli: [hermes-cli]
+
+agent:
+  max_turns: 60
+  reasoning_effort: "medium"
+
+# Not set, but considered:
+#
+# cron.wrap_response: false
+#   Removes the gateway's header/footer around delivered output. Turn off when
+#   the Hebrew digest goes to the client — the wrapper is noise in that context.
+#
+# security.tirith_enabled
+#   Pre-exec command scanning. Requires the tirith binary; worth adding for a
+#   real client deployment.
+#
+# terminal.docker_run_as_host_user
+#   Left false. Meaningless on Windows bind mounts, and the Playwright image
+#   expects to start as root.
