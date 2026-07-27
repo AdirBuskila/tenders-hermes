@@ -3,7 +3,7 @@
  * Builds the labelled evaluation set from the client's own hand-written files.
  *
  * `good tenders.txt` and `bed tenders.txt` in the production repo are ground
- * truth: an engineer at Groisman wrote them, including the reason for each
+ * truth: an engineer at the client wrote them, including the reason for each
  * verdict. They are the closest thing to a client acceptance test this project
  * has, so they are parsed from source rather than retyped — a retyped copy
  * silently drifts from what the client actually said.

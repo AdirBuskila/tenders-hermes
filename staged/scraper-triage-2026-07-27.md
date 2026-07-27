@@ -133,7 +133,7 @@ to confirm.
 3. **`nta` and `rail` need a different approach.** Blocked from both origins;
    `rail` serves a full Cloudflare challenge (`Enable JavaScript and cookies to
    continue`). Options in order of preference: look for an official tenders API
-   or RSS feed; ask whether Groisman holds a portal account whose session could
+   or RSS feed; ask whether the client holds a portal account whose session could
    be reused; only then consider residential egress — and that is the client's
    decision, not a technical default.
 4. **`ayalon` deadline selector** — 175 of 625 rows carry no date. Low priority,

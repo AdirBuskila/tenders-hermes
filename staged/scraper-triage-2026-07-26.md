@@ -112,8 +112,8 @@ start erroring. None observed among the 34, but worth one supervised run.
    drifted — but there is no point tuning selectors against a 403.
 4. **`nta` and `rail` need a different approach entirely.** Blocked from both
    origins; `rail` is behind a full Cloudflare challenge. Options, in order of
-   preference: check for an official tenders API or RSS feed; ask the client
-   whether Groisman has a portal account whose session could be reused; only
+   preference: check for an official tenders API or RSS feed; ask whether the
+   client has a portal account whose session could be reused; only
    then consider a residential-egress proxy — and that is a decision for the
    client, not a technical default.
 
