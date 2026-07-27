@@ -17,16 +17,27 @@ had asked for.
 ## The finding
 
 The nightly workflow reported success every morning. It had been green for
-weeks. Underneath:
+weeks. Underneath, **only 11 of 34 portals were returning anything** — and the
+cause had nothing to do with the code.
 
-| | Production (GitHub Actions) | Identical code, different IP |
-|---|---|---|
-| Portals returning tenders | **11 / 34** | **32 / 34** |
+Same code, same day, three origins:
 
-**192 open tenders were invisible to the client — recoverable with zero code
-changes.** The scrapers were never broken. They were *blocked from where they
-run*: Israeli agency portals reject datacenter IP ranges by reputation, and CI
-runners live in those ranges.
+| Origin | Portals reachable | Refused | Open tenders collected |
+|---|---|---|---|
+| GitHub Actions (production) | 11 / 34 | — | 260 |
+| Hetzner (Germany) | 12 / 34 | 16 | — |
+| Home connection (Israel) | 29 / 34 | 2 | 271 |
+| **GCP `me-west1` (Tel Aviv)** | **31 / 34** | **1** | **438** |
+
+**The scrapers were never broken. They were blocked from where they ran.**
+Israeli agency portals refuse foreign IPs — it is geo-blocking, not hosting
+reputation, which the German datacenter result establishes: a *datacenter* IP
+inside Israel works while a datacenter IP outside it does not.
+
+Deploying to Tel Aviv recovered **21 portals with zero code changes**, and
+`rail` (רכבת ישראל) along with them — a portal earlier triage had written off
+as blocked from every origin, which now yields tenders including a tier-A
+railway consulting RFP the client could not previously see.
 
 Nobody noticed, because of one unchecked return value:
 
@@ -262,11 +273,34 @@ staged/                    agent proposals awaiting human review
 
 ---
 
+## Deployed
+
+Running unattended on a GCP `me-west1` (Tel Aviv) instance:
+
+- **05:30** — scrape 34 portals, classify, write snapshot
+- **06:00** — render the Hebrew digest, deliver to Telegram
+- Telegram gateway live as a systemd service, restricted to one user ID
+- Agent reachable conversationally: it loads its skills, queries in the
+  sandbox, and reports which data source it used
+
+Both scheduled jobs were **proved by forcing a run**, not left to fire
+unattended and hope. That caught a real failure: Hermes does not export `.env`
+into `--no-agent` cron jobs, so the refresh job scraped all 34 portals and then
+died at the classifier with `ANTHROPIC_API_KEY not set`. The digest job had
+succeeded in the same environment because it needs no secrets — the two jobs
+differ in exactly the dimension that mattered, so the passing one proved
+nothing about the failing one.
+
+It failed *safely* — `refresh.sh` writes to a temp file and only moves it into
+place on success, so the previous good snapshot survived and the warning was
+delivered. But failing safely is not working.
+
 ## Running it
 
 See **[DEPLOY.md](DEPLOY.md)**. Step 0 is verifying the host's IP can reach the
-portals at all — 21 seconds, and it decides whether the deployment is worth
-paying for.
+portals at all — 60 seconds, and it decides whether the deployment is worth
+paying for. On a rented box that check cost about one cent and ruled out a
+provider before any commitment.
 
 ```bash
 docker build -t tenders-agent:1.0 docker/
