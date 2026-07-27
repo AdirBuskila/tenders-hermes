@@ -91,6 +91,26 @@ function daysLeft(iso, now) {
  * two days before it closes.
  */
 const REASON_CHARS = 110;
+const TITLE_CHARS = 150;
+
+/**
+ * Collapse whitespace and neutralise characters that break Telegram Markdown.
+ *
+ * Portal titles arrive with embedded newlines, tabs and runs of spaces from the
+ * source markup. Unescaped `[` or `]` inside a link label also terminates it
+ * early. Both produce a 400 from Telegram for the entire message, not just the
+ * offending line.
+ */
+function clean(text) {
+  return trim(
+    String(text ?? '')
+      .replace(/[\r\n\t]+/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/[[\]]/g, '')
+      .trim(),
+    TITLE_CHARS,
+  );
+}
 
 /** Trim to a whole word and mark the cut, so nothing reads as a complete thought it isn't. */
 function trim(text, max) {
@@ -146,7 +166,12 @@ function render(tenders, { since, now }) {
     lines.push(`*${siteLabel(site)}* (${list.length})`);
     for (const t of list) {
       const d = daysLeft(t.deadline, now);
-      lines.push(`• [${t.title}](${t.url})`);
+      // Collapse whitespace inside the title. Several portals embed newlines
+      // and long runs of spaces in their markup, and a newline inside a
+      // Markdown link label breaks the link — Telegram then rejects the WHOLE
+      // message with a 400 that names no line. One malformed title silently
+      // costs the entire digest.
+      lines.push(`• [${clean(t.title)}](${t.url})`);
       lines.push(`  הגשה: ${formatDeadline(t.deadline)}${urgency(d)}`);
       // agent_reason comes from the classifier, relevance_reason from the live
       // keyword rules. Either may be present depending on the source.

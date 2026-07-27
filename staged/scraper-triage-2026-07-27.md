@@ -1,5 +1,25 @@
 # Scraper triage — complete sweep, 2026-07-27
 
+> [!important] UPDATE — deployed to GCP Tel Aviv, and one conclusion below is wrong
+> This document says `nta` **and `rail`** are blocked from every origin, and
+> recommends portal credentials or residential egress for both. Measured from a
+> VM in `me-west1` (Tel Aviv): **`rail` returns HTTP 200 and 13 open tenders.**
+> It was never blocked by reputation — it was blocked by *country*, and the fix
+> was a server in the right one.
+>
+> **`nta` is now the only portal refused from every origin tested.**
+>
+> The wider result, same code and same day, purely by moving the origin:
+>
+> | | GitHub Actions | Home (Israel) | **GCP Tel Aviv** |
+> |---|---|---|---|
+> | Portals reachable | 11 / 34 | 29 / 34 | **31 / 34** |
+> | Refused | — | 2 | **1** |
+> | Open tenders collected | 260 (mixed) | 271 | **450** |
+>
+> One regression worth recording: `ramat-gan` returns 0 from Tel Aviv where it
+> returned 14 from a home connection. Cause not yet investigated.
+
 **Status:** proposal / findings only. Nothing in `/repo` was modified.
 **Supersedes:** `scraper-triage-2026-07-26.md` (partial, 4 sites — and wrong on one point, corrected below).
 
