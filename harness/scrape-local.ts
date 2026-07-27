@@ -48,6 +48,38 @@ const has = (name: string) => process.argv.includes(`--${name}`);
 const REPO = process.env.REPO_PATH ?? process.cwd();
 const load = (rel: string) => import(pathToFileURL(resolve(REPO, rel)).href);
 
+// Four concurrent Chromium instances fit comfortably in 2 GB. Raise it on a
+// bigger box with --concurrency.
+const DEFAULT_CONCURRENCY = 4;
+
+/**
+ * Run a bounded number of tasks at once, returning Promise.allSettled results
+ * in the original order.
+ */
+async function pooledSettled<T>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<any>,
+): Promise<Array<{ status: 'fulfilled'; value: any } | { status: 'rejected'; reason: any }>> {
+  const results = new Array(items.length);
+  let next = 0;
+
+  const worker = async () => {
+    while (true) {
+      const i = next++;
+      if (i >= items.length) return;
+      try {
+        results[i] = { status: 'fulfilled' as const, value: await fn(items[i]) };
+      } catch (reason) {
+        results[i] = { status: 'rejected' as const, reason };
+      }
+    }
+  };
+
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}
+
 async function main() {
   const { configs } = await load('src/lib/scraper/configs/index.ts');
   const { runAdapter } = await load('src/lib/scraper/engine.ts');
@@ -63,12 +95,20 @@ async function main() {
     process.exit(1);
   }
 
-  console.error(`[scrape-local] running ${selected.length} adapters`);
+  const concurrency = Number(arg('concurrency') ?? DEFAULT_CONCURRENCY) || DEFAULT_CONCURRENCY;
+  console.error(`[scrape-local] running ${selected.length} adapters, concurrency ${concurrency}`);
   const started = Date.now();
 
-  // Promise.allSettled, exactly as scrape.ts does: one dead portal must not
-  // abort the other 33. A rejected adapter is a reported failure, not a crash.
-  const results = await Promise.allSettled(selected.map((c: any) => runAdapter(c)));
+  // Bounded, unlike production's Promise.allSettled over every config at once.
+  // Each dynamic adapter launches its own Chromium, so an unbounded run peaks at
+  // nine browsers and needs ~4 GB. GitHub's runners have that; a $13/month VM
+  // does not, and the failure mode is an OOM kill partway through that looks
+  // exactly like portals going quiet. Capping costs ~20 extra seconds and halves
+  // the machine we have to rent.
+  //
+  // Semantics are preserved: still settle-not-reject, so one dead portal cannot
+  // abort the other 33.
+  const results = await pooledSettled(selected, concurrency, (c: any) => runAdapter(c));
 
   const tenders: any[] = [];
   const failures: Array<{ site: string; error: string }> = [];
