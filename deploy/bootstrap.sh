@@ -88,15 +88,23 @@ else
   echo "    production repo already present"
 fi
 
-say "Installing production dependencies (Linux binaries)"
-# Must happen ON this host: a checkout carrying another platform's node_modules
-# ships a native esbuild that cannot execute here.
-cd "$BASE/tenders-search-automation" && npm ci --silent
-
 say "Building the sandbox image"
 cd "$BASE/tenders-hermes"
 docker build -q -t "$IMAGE" docker/ >/dev/null
 docker run --rm -v "$PWD:/workspace" -w /workspace "$IMAGE" npm install --no-audit --no-fund --silent
+
+say "Installing production dependencies (Linux binaries)"
+# Installed INSIDE the container, using the same Node the scrapers will run
+# under. Installing on the host would mean maintaining a second Node whose
+# version drifts from the container's, and the platform-specific binaries
+# (esbuild, and anything else with a native component) must match the runtime
+# that executes them, not the machine that fetched them.
+#
+# This is the ONE place /repo is mounted writable, and it is a deployer action
+# performed once at provisioning time. The agent's mount is always :ro — that
+# is asserted immediately below, after this completes.
+docker run --rm -v "$BASE/tenders-search-automation:/repo" -w /repo "$IMAGE" \
+  npm ci --no-audit --no-fund --silent
 
 say "Verifying the read-only mount is actually enforced"
 if docker run --rm -v "$BASE/tenders-search-automation:/repo:ro" "$IMAGE" \
