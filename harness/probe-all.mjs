@@ -113,6 +113,10 @@ async function main() {
   }
   if (!configs.length) die('no sites selected');
 
+  // --ip-check answers "is this host refused?" rather than "does the scraper
+  // work?". Used by deploy/verify-ip.sh, where the real selectors are not
+  // available and row counts would only mislead.
+  const ipCheck = Boolean(args['ip-check']);
   const concurrency = Number(args.concurrency ?? DEFAULT_CONCURRENCY) || DEFAULT_CONCURRENCY;
   const cheerio = await loadCheerio();
   const browser = await launchBrowser();
@@ -124,8 +128,11 @@ async function main() {
   try {
     reports = await pooled(configs, concurrency, async (c) => {
       const r = await probeSite({ browser, cheerio, ...c });
+      const verdict = ipCheck ? r.reachability : r.classification;
+      const good = ipCheck ? r.reachability === 'reachable' : r.classification === 'ok';
       process.stderr.write(
-        `  ${r.classification === 'ok' ? '✓' : '✗'} ${c.site.padEnd(16)} ${String(r.httpStatus ?? '—').padEnd(5)} rows=${String(r.rowCount).padEnd(5)} ${r.classification}\n`,
+        `  ${good ? '✓' : '✗'} ${c.site.padEnd(16)} ${String(r.httpStatus ?? '—').padEnd(5)}` +
+          `${ipCheck ? `${String(r.htmlLength).padStart(7)}b ` : `rows=${String(r.rowCount).padEnd(5)}`} ${verdict}\n`,
       );
       return r;
     });
@@ -136,7 +143,8 @@ async function main() {
   const elapsed = Number(process.hrtime.bigint() - started) / 1e9;
 
   const summary = reports.reduce((acc, r) => {
-    acc[r.classification] = (acc[r.classification] ?? 0) + 1;
+    const key = ipCheck ? (r.reachability ?? 'probe-error') : r.classification;
+    acc[key] = (acc[key] ?? 0) + 1;
     return acc;
   }, {});
 
@@ -159,7 +167,7 @@ async function main() {
   }
 
   process.stderr.write(
-    `\n[probe-all] ${summary.ok ?? 0}/${reports.length} returning rows in ${elapsed.toFixed(1)}s\n` +
+    `\n[probe-all] ${ipCheck ? `${summary.reachable ?? 0}/${reports.length} reachable from this host` : `${summary.ok ?? 0}/${reports.length} returning rows`} in ${elapsed.toFixed(1)}s\n` +
       Object.entries(summary)
         .sort((a, b) => b[1] - a[1])
         .map(([k, v]) => `  ${String(v).padStart(3)}  ${k}`)

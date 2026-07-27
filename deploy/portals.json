@@ -1,0 +1,206 @@
+[
+  {
+    "site": "iaa",
+    "url": "https://www.iaa.gov.il/tenders-and-contracts/active-tenders/",
+    "fetcher": "dynamic",
+    "row": "tr"
+  },
+  {
+    "site": "jet",
+    "url": "https://j-t.org.il/category/tenders/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "iroads",
+    "url": "https://www.iroads.co.il/%D7%9E%D7%9B%D7%A8%D7%96%D7%99%D7%9D/%D7%9E%D7%9B%D7%A8%D7%96%D7%99%D7%9D/",
+    "fetcher": "dynamic",
+    "row": "tr"
+  },
+  {
+    "site": "ayalon",
+    "url": "https://www.ayalonhw.co.il/tenders/tenders-lobby/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "nta",
+    "url": "https://www.nta.co.il/tenders/?q=&s=14&st=1&fd=&td=",
+    "fetcher": "dynamic",
+    "row": "tr"
+  },
+  {
+    "site": "transisrael",
+    "url": "https://www.transisrael.co.il/Tenders",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "rail",
+    "url": "https://rail.co.il/?page=GeneralAuctions",
+    "fetcher": "dynamic",
+    "row": "tr"
+  },
+  {
+    "site": "arim",
+    "url": "https://www.arim.co.il/%D7%A2%D7%A8%D7%99%D7%9D_%D7%9E%D7%9B%D7%A8%D7%96%D7%99%D7%9D_%D7%A4%D7%A2%D7%99%D7%9C%D7%99%D7%9D",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "moriah",
+    "url": "https://moriah.co.il/tender_cat/%D7%9E%D7%9B%D7%A8%D7%96%D7%99%D7%9D/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "mekorot",
+    "url": "https://www.mekorot.co.il/%D7%9E%D7%9B%D7%A8%D7%96%D7%99%D7%9D/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "calcalit-rg",
+    "url": "https://calcalit-rg.co.il/michrazim/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "calcalit7",
+    "url": "https://www.calcalit7.co.il/tender/",
+    "fetcher": "dynamic",
+    "row": "tr"
+  },
+  {
+    "site": "hod-hasharon",
+    "url": "https://hod-hasharon.metropolinet.co.il/he-il/אתר-מכרזים-הוד-השרון/מכרזים/מכרזים-פעילים/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "bat-yam",
+    "url": "https://www.bat-yam.muni.il/he/bids/3109/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "shafir",
+    "url": "https://www.shaffir.org.il/bids/128/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "rehovot",
+    "url": "https://www.rehovot.muni.il/bids/?categoryId=3",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "cbinyamin",
+    "url": "https://cbinyamin.org.il/מכרזים/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "bnei-brak",
+    "url": "https://www.bnei-brak.muni.il/freedom-information/bids/bids-2/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "dekel",
+    "url": "https://bids.dekel.co.il/Home.aspx",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "kiryat-ono",
+    "url": "https://www.kiryatono.muni.il/bids/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "givat-shmuel",
+    "url": "https://www.givat-shmuel.muni.il/bids/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "elad",
+    "url": "https://www.elad.muni.il/FreedomOfInformation/Pages/BidsAndJobs.aspx",
+    "fetcher": "dynamic",
+    "row": "tr"
+  },
+  {
+    "site": "ashdod-port",
+    "url": "https://www.ashdodport.co.il/about/opportunities/tenders",
+    "fetcher": "dynamic",
+    "row": "tr"
+  },
+  {
+    "site": "yavne",
+    "url": "https://www.yavne.muni.il/bids/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "hlr",
+    "url": "https://www.hlr.co.il/bids/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "rishon-lezion",
+    "url": "https://www.rishonlezion.muni.il/Activities/Tenders/Pages/Contracting_tenders.aspx",
+    "fetcher": "dynamic",
+    "row": "tr"
+  },
+  {
+    "site": "rosh-haayin",
+    "url": "https://rosh-haayin.metropolinet.co.il/he-il/אתר-מכרזים/מכרזים/מכרזים-פעילים/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "kgat",
+    "url": "https://kgat.co.il/tender/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "ptcom",
+    "url": "https://www.ptcom.co.il/?menu=2&page=10",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "ramat-gan",
+    "url": "https://www.ramat-gan.muni.il/michrazim-and-jobs-lobby/content-pages/michrazim-public",
+    "fetcher": "dynamic",
+    "row": "tr"
+  },
+  {
+    "site": "kal-yehud",
+    "url": "https://kal-yehud.co.il/מכרזים-פתוחים/",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "mr-gov",
+    "url": "https://mr.gov.il/ilgstorefront/he/p/4000618045",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "mr-gov",
+    "url": "https://mr.gov.il/ilgstorefront/he/p/4000618012",
+    "fetcher": "static",
+    "row": "tr"
+  },
+  {
+    "site": "mr-gov",
+    "url": "https://mr.gov.il/ilgstorefront/he/p/4000615733",
+    "fetcher": "static",
+    "row": "tr"
+  }
+]

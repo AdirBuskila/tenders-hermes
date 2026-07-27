@@ -5,16 +5,22 @@
   "type": "module",
   "description": "Agent harness over the tenders-search-automation production pipeline",
   "comment": [
-    "Only tsx is a dependency, and only so the container can execute the",
-    "production repo's TypeScript adapters directly. cheerio and playwright are",
-    "resolved from /repo/node_modules so the versions always match production —",
-    "pinning our own copies here would let this harness silently diagnose a",
-    "different Playwright than the one that actually runs the scrape.",
+    "tsx exists so the container can execute the production repo's TypeScript",
+    "adapters directly. It lives here rather than being used from /repo because",
+    "the repo's node_modules is installed on whatever host developed it (win32",
+    "esbuild on this machine) and the container is Linux.",
     "",
-    "It lives here rather than being used from /repo because the repo's",
-    "node_modules is installed on whatever host developed it (win32 esbuild on",
-    "this machine), and the container is Linux. A local toolchain makes the",
-    "harness run identically on Windows, on a VPS, and in CI."
+    "playwright and cheerio are pinned to the SAME versions the production repo",
+    "declares, and are only a fallback: probe-core.mjs prefers /repo's copies",
+    "whenever the mount is present, so a diagnosis always runs the exact code",
+    "production runs. These local copies exist for deploy/verify-ip.sh, which",
+    "must work on a rented box with no access to the private repo — that check",
+    "decides whether a host is worth paying for, and it cannot be gated on",
+    "credentials.",
+    "",
+    "Keep the playwright version in step with docker/Dockerfile's base image:",
+    "the browsers ship in the image, and a mismatched client refuses to launch",
+    "them."
   ],
   "scripts": {
     "scrape": "tsx harness/scrape-local.ts",
@@ -23,6 +29,8 @@
     "check": "node --check harness/db.mjs && node --check harness/digest.mjs && node --check harness/classify.mjs && node --check harness/notify.mjs && node --check harness/probe-all.mjs && node --check harness/compare-origins.mjs && node --check harness/lib/source.mjs && node --check harness/lib/supabase.mjs && node --check harness/lib/probe-core.mjs && node --check eval/score.mjs && node --check eval/build-set.mjs && node --check eval/make-holdout.mjs"
   },
   "dependencies": {
+    "cheerio": "^1.2.0",
+    "playwright": "1.60.0",
     "tsx": "^4.19.2"
   }
 }

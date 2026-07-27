@@ -135,6 +135,44 @@ export function classify({ status, html, rowCount, navError }) {
   return 'selector-drift';
 }
 
+/**
+ * Classify *reachability* only — is this IP being served, or refused?
+ *
+ * Deliberately ignores row counts. The full classifier needs the real selectors
+ * to tell "blocked" from "the page changed", but the host-selection question
+ * comes earlier and is narrower: can this machine talk to the portal at all?
+ * Judging that on rows matched by a generic `tr` reports healthy 200-serving
+ * sites as broken, which would send someone away from a perfectly good host.
+ */
+export function classifyReachability({ status, html, navError }) {
+  if (navError) return 'unreachable';
+  if (status === 403 || status === 429) return 'refused';
+  if (status && status >= 400) return `http-${status}`;
+  if (!status) return 'no-response';
+
+  const length = html?.length ?? 0;
+
+  // Size gate BEFORE the keyword check, and this is the second time this bug
+  // has been written here. Challenge interstitials are small — Cloudflare's is
+  // ~27 KB. Real tender pages run 140–350 KB and routinely contain the word
+  // "captcha" in a consent banner or an inline script, so an unguarded keyword
+  // match labelled 17 of 34 *working* portals as challenged. A false "blocked"
+  // verdict is the expensive direction: it argues against a host that is
+  // actually fine.
+  const CHALLENGE_MAX_BYTES = 60000;
+
+  if (length < 2000) return 'thin-response';
+
+  if (length < CHALLENGE_MAX_BYTES) {
+    const lower = html.toLowerCase();
+    if (/captcha|are you a robot|cf-browser-verification|just a moment|enable javascript and cookies/.test(lower)) {
+      return 'challenged';
+    }
+  }
+
+  return 'reachable';
+}
+
 /** Count rows and check each configured selector against them. */
 export function analyzeHtml(cheerio, html, row, selectors = {}, sampleCount = 3) {
   const $ = cheerio.load(html || '');
@@ -193,6 +231,7 @@ export async function probeSite({ browser, cheerio, site, url, row = 'tr', selec
     selectorHits,
     samples,
     classification: classify({ status, html, rowCount, navError }),
+    reachability: classifyReachability({ status, html, navError }),
     ...(keepHtml ? { html } : {}),
   };
 }
