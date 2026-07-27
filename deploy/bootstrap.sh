@@ -63,13 +63,27 @@ fi
 
 if [ ! -d tenders-search-automation ]; then
   [ -n "$PROD_REPO" ] || die "PROD_REPO is not set. The production repo is private:
-    export PROD_REPO=github.com/<owner>/tenders-search-automation
-    and have a GitHub token ready (a read-only fine-grained PAT is enough)."
-  echo "    the production repo is private — paste a GitHub token (input hidden):"
-  read -rs GH_TOKEN
-  echo
-  git clone -q "https://${GH_TOKEN}@${PROD_REPO}.git" tenders-search-automation
-  unset GH_TOKEN
+    export PROD_REPO=github.com/<owner>/tenders-search-automation"
+
+  # Try an ordinary clone first. If `gh auth login` has run, or a credential
+  # helper is configured, this succeeds and no token ever has to be created,
+  # pasted or stored. Only fall back to a token when git actually cannot
+  # authenticate — a prompt nobody needs is a prompt that gets pasted into the
+  # wrong window.
+  if git clone -q "https://${PROD_REPO}.git" tenders-search-automation 2>/dev/null; then
+    echo "    cloned using existing git credentials"
+  else
+    echo "    no usable git credentials for a private repo."
+    echo "    Easiest fix, in another shell:  gh auth login   (then re-run this script)"
+    echo "    Or paste a classic PAT with 'repo' scope now (input hidden, not stored):"
+    read -rs GH_TOKEN
+    echo
+    [ -n "$GH_TOKEN" ] || die "no token supplied and no git credentials available"
+    git clone -q "https://${GH_TOKEN}@${PROD_REPO}.git" tenders-search-automation
+    unset GH_TOKEN
+    # The token would otherwise be written into .git/config by the clone URL.
+    git -C tenders-search-automation remote set-url origin "https://${PROD_REPO}.git"
+  fi
 else
   echo "    production repo already present"
 fi
