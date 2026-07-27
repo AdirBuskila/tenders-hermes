@@ -112,6 +112,31 @@ unattended path that needs no judgment buys nothing and adds a way to fail.
 
 ---
 
+## What it looks like
+
+<img src="docs/images/telegram-chat.jpeg" width="420" alt="Telegram conversation: the agent loads two skills, runs db.mjs in the sandbox, and answers in Hebrew with tenders split into relevant and not-relevant, each with a tier, deadline and link">
+
+A question in Hebrew — *"give me all the נתיבי איילון tenders"* — and the reply.
+Five things in that screenshot are the whole design:
+
+- **It loads skills, then runs a tool.** `tender-digest` and `tender-relevance`,
+  then `db.mjs list` inside the sandbox. It is not answering from the model's
+  memory of the conversation.
+- **It names its data source** — *מתוך snapshot מקומי*, "from a local snapshot".
+  The production table is unreadable to this credential (RLS with no anon
+  policy), so the tooling falls back and says so. An agent that quietly implied
+  it had read production would be worse than one that failed.
+- **It separates relevant from not**, 7 and 7, and tiers the relevant ones A/B —
+  rather than dumping 14 rows and leaving the engineer to sort them.
+- **It shows the disqualified ones with reasons** — *שילוט חוצות (אספקה ותפעול,
+  לא הנדסה)*: outdoor signage, supply and operation, not engineering. Saying
+  *why* something was rejected is what makes the filter auditable.
+- **"גם ב-Dekel"** — it flags a tender that also appears on a second portal.
+  That cross-portal duplication was found by the agent, not by me: `dekel` is a
+  shared bidding platform re-listing other bodies' tenders, so 11 rows were
+  duplicates and 3 would have appeared twice in one digest. Production's
+  `(site, tender_id)` key cannot see it.
+
 ## What it does
 
 **Relevance.** On 271 open tenders, the agent's criteria flag **45** as relevant
